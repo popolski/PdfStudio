@@ -16,6 +16,11 @@ const PageNumbersTool = lazy(() =>
   import('./tools/page-numbers/PageNumbersTool').then((m) => ({ default: m.PageNumbersTool })),
 )
 const CompressTool = lazy(() => import('./tools/compress/CompressTool').then((m) => ({ default: m.CompressTool })))
+const PdfToHtmlTool = lazy(() => import('./tools/pdf-to-html/PdfToHtmlTool').then((m) => ({ default: m.PdfToHtmlTool })))
+const PdfToWordTool = lazy(() => import('./tools/pdf-to-word/PdfToWordTool').then((m) => ({ default: m.PdfToWordTool })))
+const PdfToExcelTool = lazy(() =>
+  import('./tools/pdf-to-excel/PdfToExcelTool').then((m) => ({ default: m.PdfToExcelTool })),
+)
 
 function App() {
   return (
@@ -32,6 +37,9 @@ function App() {
             <Route path="/filigrane" element={<WatermarkTool />} />
             <Route path="/numeros-de-page" element={<PageNumbersTool />} />
             <Route path="/compresser" element={<CompressTool />} />
+            <Route path="/pdf-vers-html" element={<PdfToHtmlTool />} />
+            <Route path="/pdf-vers-word" element={<PdfToWordTool />} />
+            <Route path="/pdf-vers-excel" element={<PdfToExcelTool />} />
           </Routes>
         </Suspense>
       </div>

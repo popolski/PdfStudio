@@ -41,6 +41,21 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
     </svg>
   ),
+  toHtml: (
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9l-3 3 3 3M16 9l3 3-3 3M13 7l-2 10" />
+    </svg>
+  ),
+  toWord: (
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 4h9l3 3v13H6zM8 12l1.5 6L11 13l1.5 5L14 12" />
+    </svg>
+  ),
+  toExcel: (
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 4h9l3 3v13H6zM9 12l6 6M15 12l-6 6" />
+    </svg>
+  ),
 }
 
 export function Home() {
@@ -90,6 +105,24 @@ export function Home() {
           icon={icons.compress}
           title="Compresser"
           description="Réduire la taille du fichier PDF"
+        />
+        <ToolCard
+          to="/pdf-vers-html"
+          icon={icons.toHtml}
+          title="PDF vers HTML"
+          description="Extraire le contenu en page web"
+        />
+        <ToolCard
+          to="/pdf-vers-word"
+          icon={icons.toWord}
+          title="PDF vers Word"
+          description="Extraire le texte dans un .docx"
+        />
+        <ToolCard
+          to="/pdf-vers-excel"
+          icon={icons.toExcel}
+          title="PDF vers Excel"
+          description="Extraire un tableau dans un .xlsx"
         />
       </div>
     </div>
