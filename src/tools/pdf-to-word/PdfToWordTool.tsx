@@ -35,7 +35,7 @@ export function PdfToWordTool() {
   return (
     <ToolLayout
       title="PDF vers Word"
-      description="Extrait le texte du PDF en paragraphes dans un document Word (.docx). Le texte est préservé, mais les mises en page complexes (colonnes, tableaux) ne sont pas reconstruites."
+      description="Reconstruit de vrais paragraphes, détecte les titres selon la taille de police et réintègre les images à leur position dans un document Word (.docx). Le gras/italique et les mises en page complexes (colonnes, tableaux) ne sont pas préservés — limite du format PDF, pas de l'outil."
     >
       {!fileName && (
         <PdfDropzone accept="application/pdf" label="Déposez un fichier PDF ici" onFiles={handleFiles} />
