@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent } from 'react'
+import { useEffect, useRef, useState, type DragEvent } from 'react'
 
 interface PdfDropzoneProps {
   accept: string
@@ -11,6 +11,7 @@ interface PdfDropzoneProps {
 export function PdfDropzone({ accept, multiple = false, label, hint, onFiles }: PdfDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const acceptsImage = accept.includes('image')
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -18,6 +19,23 @@ export function PdfDropzone({ accept, multiple = false, label, hint, onFiles }: 
     const files = Array.from(event.dataTransfer.files)
     if (files.length > 0) onFiles(multiple ? files : [files[0]])
   }
+
+  useEffect(() => {
+    if (!acceptsImage) return
+
+    function handlePaste(event: ClipboardEvent) {
+      const items = event.clipboardData?.items
+      if (!items) return
+      const pastedFiles = Array.from(items)
+        .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+        .map((item) => item.getAsFile())
+        .filter((file): file is File => file !== null)
+      if (pastedFiles.length > 0) onFiles(multiple ? pastedFiles : [pastedFiles[0]])
+    }
+
+    document.addEventListener('paste', handlePaste)
+    return () => document.removeEventListener('paste', handlePaste)
+  }, [acceptsImage, multiple, onFiles])
 
   return (
     <div
@@ -42,6 +60,7 @@ export function PdfDropzone({ accept, multiple = false, label, hint, onFiles }: 
       </svg>
       <p className="text-lg font-medium text-gray-800">{label}</p>
       {hint && <p className="text-sm text-gray-500">{hint}</p>}
+      {acceptsImage && <p className="text-xs text-gray-400">ou collez une image copiée (Ctrl+V)</p>}
       <input
         ref={inputRef}
         type="file"
