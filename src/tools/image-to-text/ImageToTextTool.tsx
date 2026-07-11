@@ -1,28 +1,34 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ToolLayout } from '../../components/ToolLayout'
 import { PdfDropzone } from '../../components/PdfDropzone'
 import { downloadBlob } from '../../lib/pdf/download'
-import { recognizeImageText, OCR_LANGUAGES } from './imageToTextLogic'
+import { recognizeImage, OCR_LANGUAGES, type OcrResult } from './imageToTextLogic'
+import { buildOcrLayoutHtml } from './imageToLayoutHtml'
 
 export function ImageToTextTool() {
   const [imageUrl, setImageUrl] = useState('')
   const [fileName, setFileName] = useState('')
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [language, setLanguage] = useState('fra')
-  const [text, setText] = useState<string | null>(null)
+  const [result, setResult] = useState<OcrResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [progress, setProgress] = useState(0)
   const [statusLabel, setStatusLabel] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [showLayoutPreview, setShowLayoutPreview] = useState(false)
+
+  const baseName = fileName.replace(/\.[^.]+$/, '')
+  const layoutHtml = useMemo(() => (result ? buildOcrLayoutHtml(result, baseName) : null), [result, baseName])
 
   function handleFiles(files: File[]) {
     const file = files[0]
     setPendingFile(file)
     setFileName(file.name)
     setImageUrl(URL.createObjectURL(file))
-    setText(null)
+    setResult(null)
     setError(null)
+    setShowLayoutPreview(false)
   }
 
   async function handleRecognize() {
@@ -31,13 +37,13 @@ export function ImageToTextTool() {
     setError(null)
     setProgress(0)
     try {
-      const result = await recognizeImageText(pendingFile, language, (p, status) => {
+      const ocrResult = await recognizeImage(pendingFile, language, (p, status) => {
         setProgress(p)
         setStatusLabel(status)
       })
-      setText(result)
+      setResult(ocrResult)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "La reconnaissance a échoué.")
+      setError(err instanceof Error ? err.message : 'La reconnaissance a échoué.')
     } finally {
       setIsRunning(false)
     }
@@ -47,14 +53,15 @@ export function ImageToTextTool() {
     setImageUrl('')
     setFileName('')
     setPendingFile(null)
-    setText(null)
+    setResult(null)
     setError(null)
     setProgress(0)
+    setShowLayoutPreview(false)
   }
 
   async function handleCopy() {
-    if (!text) return
-    await navigator.clipboard.writeText(text)
+    if (!result) return
+    await navigator.clipboard.writeText(result.text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -96,7 +103,7 @@ export function ImageToTextTool() {
               </select>
             </label>
 
-            {text === null && (
+            {result === null && (
               <button
                 type="button"
                 onClick={handleRecognize}
@@ -123,18 +130,18 @@ export function ImageToTextTool() {
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
-            {text !== null && (
+            {result !== null && (
               <div className="flex flex-col gap-2">
                 <textarea
                   readOnly
-                  value={text}
-                  className="h-64 w-full rounded-md border border-gray-300 p-2 text-sm"
+                  value={result.text}
+                  className="h-48 w-full rounded-md border border-gray-300 p-2 text-sm"
                 />
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() =>
-                      downloadBlob(new Blob([text], { type: 'text/plain' }), `${fileName.replace(/\.[^.]+$/, '')}.txt`)
+                      downloadBlob(new Blob([result.text], { type: 'text/plain' }), `${baseName}.txt`)
                     }
                     className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
                   >
@@ -148,6 +155,29 @@ export function ImageToTextTool() {
                     {copied ? 'Copié !' : 'Copier'}
                   </button>
                 </div>
+
+                <div className="mt-2 flex flex-col gap-2 border-t border-gray-200 pt-3">
+                  <p className="text-xs text-gray-500">
+                    Mise en page fidèle : place chaque mot à sa position exacte (utile pour les tableaux, colonnes,
+                    dialogues avec numérotation...).
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => layoutHtml && downloadBlob(new Blob([layoutHtml], { type: 'text/html' }), `${baseName}.html`)}
+                      className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+                    >
+                      Télécharger la mise en page (.html)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowLayoutPreview((v) => !v)}
+                      className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      {showLayoutPreview ? "Masquer l'aperçu" : "Voir l'aperçu"}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -156,6 +186,14 @@ export function ImageToTextTool() {
             </button>
           </div>
         </div>
+      )}
+
+      {showLayoutPreview && layoutHtml && (
+        <iframe
+          title="Aperçu de la mise en page"
+          srcDoc={layoutHtml}
+          className="mt-6 h-[600px] w-full rounded-lg border border-gray-200 bg-white"
+        />
       )}
     </ToolLayout>
   )
