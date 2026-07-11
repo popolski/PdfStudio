@@ -34,6 +34,41 @@ function reconstructReadingOrder(
     .join('\n')
 }
 
+const UPSCALE_WIDTH_THRESHOLD = 1200
+const UPSCALE_FACTOR = 2
+
+/**
+ * Agrandit l'image avant l'OCR si elle est de taille modeste : Tesseract lit mieux les petits
+ * caractères (ex : une légende ou un numéro en petite taille) sur une image plus grande.
+ * N'agrandit pas les images déjà grandes (inutile, plus lent).
+ */
+async function upscaleIfSmall(file: File | Blob): Promise<File | Blob> {
+  const url = URL.createObjectURL(file)
+  try {
+    const img = new Image()
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve()
+      img.onerror = () => reject(new Error("Impossible de lire l'image"))
+      img.src = url
+    })
+
+    if (img.naturalWidth >= UPSCALE_WIDTH_THRESHOLD) return file
+
+    const canvas = document.createElement('canvas')
+    canvas.width = img.naturalWidth * UPSCALE_FACTOR
+    canvas.height = img.naturalHeight * UPSCALE_FACTOR
+    const context = canvas.getContext('2d')
+    if (!context) return file
+    context.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+    return await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Échec de la préparation de l'image"))), 'image/png'),
+    )
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
 export async function recognizeImageText(
   file: File | Blob,
   language: string,
@@ -44,7 +79,8 @@ export async function recognizeImageText(
   })
 
   try {
-    const { data } = await worker.recognize(file, {}, { blocks: true })
+    const preparedImage = await upscaleIfSmall(file)
+    const { data } = await worker.recognize(preparedImage, {}, { blocks: true })
     const lines = (data.blocks ?? []).flatMap((block) => block.paragraphs.flatMap((paragraph) => paragraph.lines))
     return reconstructReadingOrder(lines)
   } finally {
