@@ -21,6 +21,9 @@ const PdfToWordTool = lazy(() => import('./tools/pdf-to-word/PdfToWordTool').the
 const PdfToExcelTool = lazy(() =>
   import('./tools/pdf-to-excel/PdfToExcelTool').then((m) => ({ default: m.PdfToExcelTool })),
 )
+const ImageToTextTool = lazy(() =>
+  import('./tools/image-to-text/ImageToTextTool').then((m) => ({ default: m.ImageToTextTool })),
+)
 
 function App() {
   return (
@@ -40,6 +43,7 @@ function App() {
             <Route path="/pdf-vers-html" element={<PdfToHtmlTool />} />
             <Route path="/pdf-vers-word" element={<PdfToWordTool />} />
             <Route path="/pdf-vers-excel" element={<PdfToExcelTool />} />
+            <Route path="/image-vers-texte" element={<ImageToTextTool />} />
           </Routes>
         </Suspense>
       </div>

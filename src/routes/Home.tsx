@@ -56,6 +56,16 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 4h9l3 3v13H6zM9 12l6 6M15 12l-6 6" />
     </svg>
   ),
+  ocr: (
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3M8 9h8M8 13h5"
+      />
+    </svg>
+  ),
 }
 
 export function Home() {
@@ -123,6 +133,12 @@ export function Home() {
           icon={icons.toExcel}
           title="PDF vers Excel"
           description="Extraire un tableau dans un .xlsx"
+        />
+        <ToolCard
+          to="/image-vers-texte"
+          icon={icons.ocr}
+          title="Image vers texte (OCR)"
+          description="Extraire le texte visible dans une image"
         />
       </div>
     </div>
