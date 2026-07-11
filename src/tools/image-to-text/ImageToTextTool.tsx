@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { ToolLayout } from '../../components/ToolLayout'
 import { PdfDropzone } from '../../components/PdfDropzone'
 import { downloadBlob } from '../../lib/pdf/download'
-import { recognizeImageText, OCR_LANGUAGES } from './imageToTextLogic'
+import { recognizeImageText, copyOcrResult, OCR_LANGUAGES, type OcrTextResult } from './imageToTextLogic'
 
 export function ImageToTextTool() {
   const [imageUrl, setImageUrl] = useState('')
   const [fileName, setFileName] = useState('')
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [language, setLanguage] = useState('fra')
-  const [text, setText] = useState<string | null>(null)
+  const [result, setResult] = useState<OcrTextResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [progress, setProgress] = useState(0)
   const [statusLabel, setStatusLabel] = useState('')
@@ -21,7 +21,7 @@ export function ImageToTextTool() {
     setPendingFile(file)
     setFileName(file.name)
     setImageUrl(URL.createObjectURL(file))
-    setText(null)
+    setResult(null)
     setError(null)
   }
 
@@ -31,13 +31,13 @@ export function ImageToTextTool() {
     setError(null)
     setProgress(0)
     try {
-      const result = await recognizeImageText(pendingFile, language, (p, status) => {
+      const ocrResult = await recognizeImageText(pendingFile, language, (p, status) => {
         setProgress(p)
         setStatusLabel(status)
       })
-      setText(result)
+      setResult(ocrResult)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "La reconnaissance a échoué.")
+      setError(err instanceof Error ? err.message : 'La reconnaissance a échoué.')
     } finally {
       setIsRunning(false)
     }
@@ -47,14 +47,14 @@ export function ImageToTextTool() {
     setImageUrl('')
     setFileName('')
     setPendingFile(null)
-    setText(null)
+    setResult(null)
     setError(null)
     setProgress(0)
   }
 
   async function handleCopy() {
-    if (!text) return
-    await navigator.clipboard.writeText(text)
+    if (!result) return
+    await copyOcrResult(result)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -96,7 +96,7 @@ export function ImageToTextTool() {
               </select>
             </label>
 
-            {text === null && (
+            {result === null && (
               <button
                 type="button"
                 onClick={handleRecognize}
@@ -123,18 +123,21 @@ export function ImageToTextTool() {
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
-            {text !== null && (
+            {result !== null && (
               <div className="flex flex-col gap-2">
                 <textarea
                   readOnly
-                  value={text}
+                  value={result.text}
                   className="h-64 w-full rounded-md border border-gray-300 p-2 text-sm"
                 />
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() =>
-                      downloadBlob(new Blob([text], { type: 'text/plain' }), `${fileName.replace(/\.[^.]+$/, '')}.txt`)
+                      downloadBlob(
+                        new Blob([result.text], { type: 'text/plain' }),
+                        `${fileName.replace(/\.[^.]+$/, '')}.txt`,
+                      )
                     }
                     className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
                   >
@@ -148,6 +151,10 @@ export function ImageToTextTool() {
                     {copied ? 'Copié !' : 'Copier'}
                   </button>
                 </div>
+                <p className="text-xs text-gray-400">
+                  Le bouton "Copier" colle un tableau à 2 colonnes (nombre aligné à droite) dans les
+                  traitements de texte comme OpenOffice/Word, et du texte simple ailleurs.
+                </p>
               </div>
             )}
 
