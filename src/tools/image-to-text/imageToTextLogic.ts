@@ -13,94 +13,41 @@ export const OCR_LANGUAGES: OcrLanguage[] = [
   { code: 'ita', label: 'Italien' },
 ]
 
-export interface OcrTextResult {
-  /** Texte brut, tabulation avant un mot isolé loin à droite (compatible copie dans un champ texte simple). */
-  text: string
-  /**
-   * Représentation HTML (tableau à 2 colonnes, seconde colonne alignée à droite) à écrire dans
-   * le presse-papiers en plus du texte brut : les traitements de texte comme OpenOffice Writer
-   * collent automatiquement cette version riche plutôt que le texte brut, ce qui aligne les
-   * nombres sans manipulation de la part de l'utilisateur.
-   */
-  html: string
-}
-
-interface ReconstructedLine {
-  main: string
-  trailing: string | null
-}
-
 const COLUMN_GAP_FACTOR = 2
 
 /**
- * Reconstruit chaque ligne à partir des blocs de Tesseract, en gardant tel quel le
- * regroupement de mots par ligne décidé par Tesseract (fiable), mais en re-triant les lignes
- * (par position verticale) et les mots au sein d'une ligne (par position horizontale) : sur
- * les mises en page à deux colonnes (texte + nombre aligné à droite), l'assemblage automatique
- * du texte brut de Tesseract peut mélanger l'ordre entre colonnes/blocs.
+ * Reconstruit le texte ligne par ligne à partir des blocs de Tesseract, en gardant tel quel
+ * le regroupement de mots par ligne décidé par Tesseract (fiable), mais en re-triant les
+ * lignes (par position verticale) et les mots au sein d'une ligne (par position horizontale) :
+ * sur les mises en page à deux colonnes (texte + nombre aligné à droite), l'assemblage
+ * automatique du texte brut de Tesseract peut mélanger l'ordre entre colonnes/blocs.
  *
- * Quand l'écart horizontal entre deux mots d'une ligne dépasse nettement la normale (ex : un
- * numéro isolé loin à droite), le mot le plus à droite est isolé comme colonne secondaire
- * plutôt que simplement séparé par un espace.
+ * Quand l'espace entre deux mots d'une même ligne est nettement plus grand que la normale
+ * (ex : un numéro isolé loin à droite), une tabulation est insérée à la place d'une simple
+ * espace, pour garder une trace de cette séparation en colonne une fois collé dans un
+ * traitement de texte.
  */
-function reconstructLines(
+function reconstructReadingOrder(
   lines: {
     bbox: { x0: number; y0: number; y1: number }
     words: { text: string; bbox: { x0: number; x1: number } }[]
   }[],
-): ReconstructedLine[] {
+): string {
   return [...lines]
     .sort((a, b) => a.bbox.y0 - b.bbox.y0)
     .map((line) => {
       const sortedWords = [...line.words].sort((a, b) => a.bbox.x0 - b.bbox.x0)
       const lineHeight = Math.max(1, line.bbox.y1 - line.bbox.y0)
 
-      let maxGap = -Infinity
-      let splitIndex = -1
-      for (let i = 1; i < sortedWords.length; i++) {
-        const gap = sortedWords[i].bbox.x0 - sortedWords[i - 1].bbox.x1
-        if (gap > maxGap) {
-          maxGap = gap
-          splitIndex = i
-        }
-      }
-
-      const joinText = (words: typeof sortedWords) => words.map((w) => w.text).join(' ')
-
-      if (splitIndex === -1 || maxGap <= lineHeight * COLUMN_GAP_FACTOR) {
-        return { main: joinText(sortedWords), trailing: null }
-      }
-
-      return {
-        main: joinText(sortedWords.slice(0, splitIndex)),
-        trailing: joinText(sortedWords.slice(splitIndex)),
-      }
+      return sortedWords.reduce((result, word, index) => {
+        if (index === 0) return word.text
+        const previousWord = sortedWords[index - 1]
+        const gap = word.bbox.x0 - previousWord.bbox.x1
+        const separator = gap > lineHeight * COLUMN_GAP_FACTOR ? '\t' : ' '
+        return result + separator + word.text
+      }, '')
     })
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
-function buildPlainText(lines: ReconstructedLine[]): string {
-  return lines.map((line) => (line.trailing ? `${line.main}\t${line.trailing}` : line.main)).join('\n')
-}
-
-function buildHtmlTable(lines: ReconstructedLine[]): string {
-  const rows = lines
-    .map((line) => {
-      if (line.trailing === null) {
-        return `<tr><td colspan="2">${escapeHtml(line.main)}</td></tr>`
-      }
-      return `<tr><td>${escapeHtml(line.main)}</td><td style="text-align:right;white-space:nowrap;padding-left:16px">${escapeHtml(line.trailing)}</td></tr>`
-    })
-    .join('')
-
-  return `<table style="border-collapse:collapse">${rows}</table>`
+    .join('\n')
 }
 
 const UPSCALE_WIDTH_THRESHOLD = 1200
@@ -142,7 +89,7 @@ export async function recognizeImageText(
   file: File | Blob,
   language: string,
   onProgress: (progress: number, status: string) => void,
-): Promise<OcrTextResult> {
+): Promise<string> {
   const worker = await createWorker(language, undefined, {
     logger: (message: LoggerMessage) => onProgress(message.progress, message.status),
   })
@@ -150,22 +97,9 @@ export async function recognizeImageText(
   try {
     const preparedImage = await upscaleIfSmall(file)
     const { data } = await worker.recognize(preparedImage, {}, { blocks: true })
-    const rawLines = (data.blocks ?? []).flatMap((block) => block.paragraphs.flatMap((paragraph) => paragraph.lines))
-    const lines = reconstructLines(rawLines)
-    return { text: buildPlainText(lines), html: buildHtmlTable(lines) }
+    const lines = (data.blocks ?? []).flatMap((block) => block.paragraphs.flatMap((paragraph) => paragraph.lines))
+    return reconstructReadingOrder(lines)
   } finally {
     await worker.terminate()
-  }
-}
-
-export async function copyOcrResult(result: OcrTextResult): Promise<void> {
-  if (typeof ClipboardItem !== 'undefined' && navigator.clipboard.write) {
-    const item = new ClipboardItem({
-      'text/plain': new Blob([result.text], { type: 'text/plain' }),
-      'text/html': new Blob([result.html], { type: 'text/html' }),
-    })
-    await navigator.clipboard.write([item])
-  } else {
-    await navigator.clipboard.writeText(result.text)
   }
 }
