@@ -13,24 +13,40 @@ export const OCR_LANGUAGES: OcrLanguage[] = [
   { code: 'ita', label: 'Italien' },
 ]
 
+const COLUMN_GAP_FACTOR = 2
+
 /**
  * Reconstruit le texte ligne par ligne à partir des blocs de Tesseract, en gardant tel quel
  * le regroupement de mots par ligne décidé par Tesseract (fiable), mais en re-triant les
  * lignes (par position verticale) et les mots au sein d'une ligne (par position horizontale) :
  * sur les mises en page à deux colonnes (texte + nombre aligné à droite), l'assemblage
  * automatique du texte brut de Tesseract peut mélanger l'ordre entre colonnes/blocs.
+ *
+ * Quand l'espace entre deux mots d'une même ligne est nettement plus grand que la normale
+ * (ex : un numéro isolé loin à droite), une tabulation est insérée à la place d'une simple
+ * espace, pour garder une trace de cette séparation en colonne une fois collé dans un
+ * traitement de texte.
  */
 function reconstructReadingOrder(
-  lines: { bbox: { x0: number; y0: number }; words: { text: string; bbox: { x0: number } }[] }[],
+  lines: {
+    bbox: { x0: number; y0: number; y1: number }
+    words: { text: string; bbox: { x0: number; x1: number } }[]
+  }[],
 ): string {
   return [...lines]
     .sort((a, b) => a.bbox.y0 - b.bbox.y0)
-    .map((line) =>
-      [...line.words]
-        .sort((a, b) => a.bbox.x0 - b.bbox.x0)
-        .map((word) => word.text)
-        .join(' '),
-    )
+    .map((line) => {
+      const sortedWords = [...line.words].sort((a, b) => a.bbox.x0 - b.bbox.x0)
+      const lineHeight = Math.max(1, line.bbox.y1 - line.bbox.y0)
+
+      return sortedWords.reduce((result, word, index) => {
+        if (index === 0) return word.text
+        const previousWord = sortedWords[index - 1]
+        const gap = word.bbox.x0 - previousWord.bbox.x1
+        const separator = gap > lineHeight * COLUMN_GAP_FACTOR ? '\t' : ' '
+        return result + separator + word.text
+      }, '')
+    })
     .join('\n')
 }
 
