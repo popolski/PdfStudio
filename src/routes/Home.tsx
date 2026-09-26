@@ -57,7 +57,7 @@ export function Home() {
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-8 sm:pt-14">
         <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Simple et privé</p>
         <h1 className="max-w-2xl text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
-          Que voulez-vous faire avec votre PDF ?
+          Que faire avec votre PDF ?
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
           Choisissez une action. Vos documents sont traités dans votre navigateur.
