@@ -12,15 +12,16 @@ export function ToolCard({ to, icon, title, description }: ToolCardProps) {
   return (
     <Link
       to={to}
-      className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+      className="group flex min-h-32 items-center gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm transition-colors hover:border-brand-500 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-brand-500 sm:min-h-44 sm:flex-col sm:items-start sm:gap-3"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-600">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600">
         {icon}
       </div>
-      <div>
-        <h3 className="font-semibold text-gray-900">{title}</h3>
-        <p className="mt-1 text-sm text-gray-500">{description}</p>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-lg font-semibold text-ink">{title}</h3>
+        <p className="mt-1 text-sm leading-snug text-muted">{description}</p>
       </div>
+      <span className="ml-auto text-muted group-hover:text-brand-600 sm:self-end" aria-hidden="true">↗</span>
     </Link>
   )
 }

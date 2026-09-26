@@ -4,12 +4,13 @@ import { acceptsFile } from './acceptsFile'
 interface PdfDropzoneProps {
   accept: string
   multiple?: boolean
+  compact?: boolean
   label: string
   hint?: string
   onFiles: (files: File[]) => void | Promise<void>
 }
 
-export function PdfDropzone({ accept, multiple = false, label, hint, onFiles }: PdfDropzoneProps) {
+export function PdfDropzone({ accept, multiple = false, compact = false, label, hint, onFiles }: PdfDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -71,11 +72,13 @@ export function PdfDropzone({ accept, multiple = false, label, hint, onFiles }: 
             inputRef.current?.click()
           }
         }}
-        className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-10 text-center cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${
-          isDragging ? 'border-brand-500 bg-brand-50' : 'border-gray-300 bg-white hover:border-brand-300'
+        className={`flex w-full items-center justify-center gap-3 rounded-xl border-2 border-dashed text-center cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${
+          compact ? 'min-h-20 flex-row p-4' : 'min-h-44 flex-col p-8'
+        } ${
+          isDragging ? 'border-brand-500 bg-brand-100' : 'border-brand-200 bg-brand-50 hover:border-brand-500'
         }`}
       >
-        <svg className="h-10 w-10 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className={`${compact ? 'h-7 w-7' : 'h-10 w-10'} shrink-0 text-brand-600`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -83,9 +86,11 @@ export function PdfDropzone({ accept, multiple = false, label, hint, onFiles }: 
             d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
           />
         </svg>
-        <p className="text-lg font-medium text-gray-800">{label}</p>
-        {hint && <p className="text-sm text-gray-500">{hint}</p>}
-        {acceptsImage && <p className="text-xs text-gray-400">ou collez une image copiée (Ctrl+V)</p>}
+        <div>
+          <p className={`${compact ? 'text-sm' : 'text-lg'} font-semibold text-ink`}>{label}</p>
+          {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
+          {acceptsImage && !compact && <p className="mt-1 text-xs text-muted">ou collez une image copiée (Ctrl+V)</p>}
+        </div>
         <input
           ref={inputRef}
           type="file"

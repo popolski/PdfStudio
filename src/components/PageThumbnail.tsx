@@ -8,6 +8,11 @@ interface PageThumbnailProps {
   onDelete?: (id: string) => void
   onRotate?: (id: string) => void
   onToggleSelect?: (id: string) => void
+  onMoveUp: () => void
+  onMoveDown: () => void
+  canMoveUp: boolean
+  canMoveDown: boolean
+  showSource: boolean
   selectable?: boolean
 }
 
@@ -17,9 +22,14 @@ export function PageThumbnail({
   onDelete,
   onRotate,
   onToggleSelect,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
+  showSource,
   selectable = false,
 }: PageThumbnailProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: page.id,
   })
 
@@ -32,39 +42,75 @@ export function PageThumbnail({
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`group relative flex flex-col items-center rounded-lg border bg-white p-2 shadow-sm cursor-grab active:cursor-grabbing ${
+      role="group"
+      aria-label={`Page ${index + 1}${showSource ? `, ${page.sourceFileName}` : ''}`}
+      className={`relative flex min-w-0 flex-col rounded-xl border bg-white p-2.5 shadow-sm ${
         isDragging ? 'opacity-40' : ''
-      } ${page.selected ? 'border-brand-500 ring-2 ring-brand-200' : 'border-gray-200'}`}
+      } ${page.selected ? 'border-brand-500 ring-2 ring-brand-200' : 'border-line'}`}
     >
-      <div className="relative">
+      <div className="relative flex h-36 items-center justify-center rounded-lg bg-page p-2">
         <img
           src={page.thumbnailUrl}
           alt={`Page ${index + 1}`}
           style={{ transform: `rotate(${page.rotation}deg)` }}
-          className="max-h-48 w-auto rounded border border-gray-100 transition-transform"
+          className="max-h-full max-w-full rounded border border-line bg-white object-contain transition-transform"
           draggable={false}
         />
         {selectable && (
-          <input
-            type="checkbox"
-            checked={page.selected}
-            onChange={() => onToggleSelect?.(page.id)}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="absolute left-1 top-1 h-5 w-5 accent-brand-600"
-          />
+          <label className="absolute left-1 top-1 grid h-11 w-11 place-items-center rounded-lg bg-white shadow-sm">
+            <input
+              type="checkbox"
+              checked={page.selected}
+              onChange={() => onToggleSelect?.(page.id)}
+              aria-label={`Sélectionner la page ${index + 1}`}
+              className="h-5 w-5 accent-brand-600"
+            />
+          </label>
         )}
+        <button
+          ref={setActivatorNodeRef}
+          type="button"
+          {...attributes}
+          {...listeners}
+          aria-label={`Déplacer la page ${index + 1} par glisser-déposer ou avec les flèches du clavier`}
+          className="absolute right-1 top-1 grid h-11 w-11 place-items-center rounded-lg bg-white text-lg text-muted shadow-sm cursor-grab active:cursor-grabbing"
+          title="Déplacer la page"
+        >
+          ⋮⋮
+        </button>
       </div>
-      <span className="mt-1 text-xs text-gray-500">Page {index + 1}</span>
-      <div className="mt-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="mt-2 min-w-0">
+        <p className="text-sm font-semibold text-ink">Page {index + 1}</p>
+        {showSource && <p className="truncate text-xs text-muted" title={page.sourceFileName}>{page.sourceFileName}</p>}
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-1">
+        <button
+          type="button"
+          onClick={onMoveUp}
+          disabled={!canMoveUp}
+          aria-label={`Monter la page ${index + 1}`}
+          title="Monter"
+          className="min-h-10 rounded-lg border border-line text-muted hover:bg-brand-50 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          onClick={onMoveDown}
+          disabled={!canMoveDown}
+          aria-label={`Descendre la page ${index + 1}`}
+          title="Descendre"
+          className="min-h-10 rounded-lg border border-line text-muted hover:bg-brand-50 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          ↓
+        </button>
         {onRotate && (
           <button
             type="button"
-            onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onRotate(page.id)}
+            aria-label={`Tourner la page ${index + 1}`}
             title="Tourner"
-            className="rounded p-1 text-gray-600 hover:bg-gray-100"
+            className="min-h-10 rounded-lg border border-line text-muted hover:bg-brand-50 hover:text-brand-600"
           >
             ↻
           </button>
@@ -72,10 +118,10 @@ export function PageThumbnail({
         {onDelete && (
           <button
             type="button"
-            onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onDelete(page.id)}
-            title="Supprimer"
-            className="rounded p-1 text-red-500 hover:bg-red-50"
+            aria-label={`Retirer la page ${index + 1}`}
+            title="Retirer"
+            className="min-h-10 rounded-lg border border-line text-red-600 hover:bg-red-50"
           >
             ✕
           </button>

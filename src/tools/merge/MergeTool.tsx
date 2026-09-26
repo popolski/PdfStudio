@@ -38,46 +38,87 @@ export function MergeTool() {
     setResult(bytes)
   }
 
-  return (
-    <ToolLayout title="Fusionner des PDF" description="Combinez plusieurs fichiers PDF en un seul, dans l'ordre de votre choix.">
-      <PdfDropzone
-        accept="application/pdf"
-        multiple
-        label="Déposez vos fichiers PDF ici"
-        hint="Vous pouvez ajouter plusieurs fichiers, glissez les pages pour changer l'ordre"
-        onFiles={handleFiles}
-      />
+  function updatePages(action: Parameters<typeof dispatch>[0]) {
+    setResult(null)
+    dispatch(action)
+  }
 
-      {pages.length > 0 && (
-        <div className="mt-6 flex flex-col gap-6">
-          <p className="text-sm text-gray-500">{pages.length} page(s) au total</p>
-          <PageThumbnailGrid
-            pages={pages}
-            onReorder={(fromId, toId) => dispatch({ type: 'REORDER', fromId, toId })}
-            onDelete={(id) => dispatch({ type: 'DELETE_PAGE', id })}
-            onRotate={(id) => dispatch({ type: 'ROTATE_PAGE', id })}
+  const fileCount = new Set(pages.map((page) => page.sourceFileId)).size
+  const step = result ? 3 : pages.length > 0 ? 2 : 1
+
+  return (
+    <ToolLayout title="Fusionner des PDF" description="Ajoutez vos fichiers, vérifiez l'ordre des pages, puis téléchargez le résultat.">
+      <ol aria-label="Étapes de la fusion" className="mb-7 grid grid-cols-3 gap-1 text-[11px] sm:gap-2 sm:text-sm">
+        {['Ajouter', 'Ajuster', 'Télécharger'].map((label, index) => (
+          <li
+            key={label}
+            aria-current={step === index + 1 ? 'step' : undefined}
+            className={`flex min-w-0 items-center gap-1 rounded-lg px-1 py-2 font-medium sm:gap-2 sm:px-3 ${
+              step === index + 1 ? 'bg-brand-100 text-brand-700' : index + 1 < step ? 'text-ink' : 'text-muted'
+            }`}
+          >
+            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-xs sm:h-6 sm:w-6 ${
+              step === index + 1 ? 'bg-brand-600 text-white' : 'bg-white text-muted'
+            }`}>{index + 1}</span>
+            <span>{label}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
+        <section className="min-w-0 rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-6" aria-label="Fichiers et pages">
+          <PdfDropzone
+            accept="application/pdf"
+            multiple
+            compact={pages.length > 0}
+            label={pages.length > 0 ? 'Ajouter un autre PDF' : 'Choisir des fichiers PDF'}
+            hint={pages.length > 0 ? 'Les nouvelles pages sont ajoutées à la fin' : 'Glissez vos fichiers ici ou parcourez votre appareil'}
+            onFiles={handleFiles}
           />
 
-          {result ? (
-            <DownloadResultCard
-              fileSizeBytes={result.byteLength}
-              onDownload={() => downloadBytes(result, 'fusion.pdf')}
-              onReset={reset}
-            />
-          ) : (
-            <div className="flex justify-center gap-3">
-              <ProcessingButton label="Fusionner" onClick={handleApply} disabled={pages.length === 0} />
-              <button
-                type="button"
-                onClick={reset}
-                className="rounded-lg border border-gray-300 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Annuler
-              </button>
+          {pages.length > 0 && (
+            <div className="mt-7">
+              <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-lg font-semibold text-ink">Pages du document</h2>
+                <p className="text-sm text-muted">{pages.length} page{pages.length > 1 ? 's' : ''} · {fileCount} fichier{fileCount > 1 ? 's' : ''}</p>
+              </div>
+              <p className="mb-4 text-sm text-muted">Glissez une page ou utilisez les flèches pour changer l'ordre.</p>
+              <PageThumbnailGrid
+                pages={pages}
+                onReorder={(fromId, toId) => updatePages({ type: 'REORDER', fromId, toId })}
+                onDelete={(id) => updatePages({ type: 'DELETE_PAGE', id })}
+                onRotate={(id) => updatePages({ type: 'ROTATE_PAGE', id })}
+              />
             </div>
           )}
-        </div>
-      )}
+        </section>
+
+        <aside className="rounded-2xl border border-line bg-white p-5 shadow-sm lg:sticky lg:top-6" aria-label="Résultat de la fusion">
+          <h2 className="text-base font-semibold text-ink">Votre document</h2>
+          {pages.length === 0 ? (
+            <p className="mt-3 text-sm leading-relaxed text-muted">Ajoutez des PDF pour voir les pages à assembler.</p>
+          ) : (
+            <>
+              <p className="my-4 text-sm text-muted">{pages.length} page{pages.length > 1 ? 's' : ''} dans le fichier final</p>
+              {result ? (
+                <DownloadResultCard
+                  compact
+                  fileSizeBytes={result.byteLength}
+                  onDownload={() => downloadBytes(result, 'fusion.pdf')}
+                  onReset={reset}
+                />
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <ProcessingButton fullWidth label="Fusionner les PDF" onClick={handleApply} />
+                  <button type="button" onClick={reset} className="rounded-lg border border-line px-5 py-2.5 font-medium text-muted hover:bg-brand-50">
+                    Tout effacer
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </aside>
+      </div>
     </ToolLayout>
   )
 }

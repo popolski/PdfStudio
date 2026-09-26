@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
+import { SiteHeader } from './SiteHeader'
 
 interface ToolLayoutProps {
   title: string
@@ -9,13 +10,16 @@ interface ToolLayoutProps {
 
 export function ToolLayout({ title, description, children }: ToolLayoutProps) {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <Link to="/" className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-600">
-        ← Retour à l'accueil
-      </Link>
-      <h1 className="text-3xl font-semibold text-gray-900">{title}</h1>
-      <p className="mt-1 mb-8 text-gray-500">{description}</p>
-      {children}
-    </div>
+    <>
+      <SiteHeader />
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
+        <Link to="/" className="mb-7 inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-brand-600">
+          <span aria-hidden="true">←</span> Tous les outils
+        </Link>
+        <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">{title}</h1>
+        <p className="mb-8 mt-3 max-w-2xl leading-relaxed text-muted">{description}</p>
+        {children}
+      </main>
+    </>
   )
 }

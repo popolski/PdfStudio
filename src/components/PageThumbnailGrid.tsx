@@ -1,12 +1,13 @@
 import {
   DndContext,
   closestCenter,
+  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core'
-import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, rectSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import type { PageEntry } from '../types/pdf'
 import { PageThumbnail } from './PageThumbnail'
 
@@ -29,7 +30,9 @@ export function PageThumbnailGrid({
 }: PageThumbnailGridProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+  const showSource = new Set(pages.map((page) => page.sourceFileId)).size > 1
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -41,7 +44,7 @@ export function PageThumbnailGrid({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={pages.map((p) => p.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {pages.map((page, index) => (
             <PageThumbnail
               key={page.id}
@@ -50,6 +53,11 @@ export function PageThumbnailGrid({
               onDelete={onDelete}
               onRotate={onRotate}
               onToggleSelect={onToggleSelect}
+              onMoveUp={() => { if (index > 0) onReorder(page.id, pages[index - 1].id) }}
+              onMoveDown={() => { if (index < pages.length - 1) onReorder(page.id, pages[index + 1].id) }}
+              canMoveUp={index > 0}
+              canMoveDown={index < pages.length - 1}
+              showSource={showSource}
               selectable={selectable}
             />
           ))}

@@ -5,9 +5,10 @@ interface ProcessingButtonProps {
   onClick: () => Promise<void>
   disabled?: boolean
   icon?: ReactNode
+  fullWidth?: boolean
 }
 
-export function ProcessingButton({ label, onClick, disabled, icon }: ProcessingButtonProps) {
+export function ProcessingButton({ label, onClick, disabled, icon, fullWidth = false }: ProcessingButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,12 +25,12 @@ export function ProcessingButton({ label, onClick, disabled, icon }: ProcessingB
   }
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className={`flex flex-col items-center gap-2 ${fullWidth ? 'w-full' : ''}`}>
       <button
         type="button"
         onClick={handleClick}
         disabled={disabled || isProcessing}
-        className="flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+        className={`flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-gray-300 ${fullWidth ? 'w-full' : ''}`}
       >
         {isProcessing ? (
           <>

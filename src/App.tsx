@@ -28,7 +28,7 @@ const ImageToTextTool = lazy(() =>
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-page text-ink">
         <Suspense fallback={<div className="p-10 text-center text-gray-400">Chargement…</div>}>
           <Routes>
             <Route path="/" element={<Home />} />

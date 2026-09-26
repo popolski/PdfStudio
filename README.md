@@ -32,3 +32,4 @@ npm run build
 ## Déploiement
 
 Déployé sur Vercel, connecté au dépôt GitHub — chaque push sur `master` redéploie automatiquement.
+Les routes de l'application (par exemple `/fusion`) sont redirigées vers `index.html` pour permettre l'ouverture directe et l'actualisation d'une page.
