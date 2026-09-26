@@ -12,15 +12,15 @@ export function PdfToHtmlTool() {
 
   async function handleFiles(files: File[]) {
     const file = files[0]
-    setFileName(file.name)
     setError(null)
     setIsConverting(true)
     try {
       const bytes = await file.arrayBuffer()
       const result = await convertPdfToHtml(bytes, file.name)
       setHtml(result)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Conversion impossible.')
+      setFileName(file.name)
+    } catch {
+      setError('Conversion impossible. Vérifiez que le PDF est lisible et non protégé.')
     } finally {
       setIsConverting(false)
     }
@@ -42,11 +42,11 @@ export function PdfToHtmlTool() {
       title="PDF vers HTML"
       description="Extrait le texte de chaque page en HTML positionné. Fidèle au contenu, mais la mise en page reste une approximation visuelle — ce n'est pas du HTML sémantique."
     >
-      {!fileName && (
+      {!fileName && !isConverting && (
         <PdfDropzone accept="application/pdf" label="Déposez un fichier PDF ici" onFiles={handleFiles} />
       )}
 
-      {fileName && isConverting && <p className="text-center text-gray-500">Conversion en cours…</p>}
+      {isConverting && <p className="text-center text-gray-500">Conversion en cours…</p>}
 
       {error && <p className="text-center text-red-600">{error}</p>}
 

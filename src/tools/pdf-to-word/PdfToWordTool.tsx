@@ -12,15 +12,15 @@ export function PdfToWordTool() {
 
   async function handleFiles(files: File[]) {
     const file = files[0]
-    setFileName(file.name)
     setError(null)
     setIsConverting(true)
     try {
       const bytes = await file.arrayBuffer()
       const blob = await convertPdfToWord(bytes)
       setResult(blob)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Conversion impossible.')
+      setFileName(file.name)
+    } catch {
+      setError('Conversion impossible. Vérifiez que le PDF est lisible et non protégé.')
     } finally {
       setIsConverting(false)
     }
@@ -37,11 +37,11 @@ export function PdfToWordTool() {
       title="PDF vers Word"
       description="Reconstruit de vrais paragraphes, détecte les titres selon la taille de police et réintègre les images à leur position dans un document Word (.docx). Le gras/italique et les mises en page complexes (colonnes, tableaux) ne sont pas préservés — limite du format PDF, pas de l'outil."
     >
-      {!fileName && (
+      {!fileName && !isConverting && (
         <PdfDropzone accept="application/pdf" label="Déposez un fichier PDF ici" onFiles={handleFiles} />
       )}
 
-      {fileName && isConverting && <p className="text-center text-gray-500">Conversion en cours…</p>}
+      {isConverting && <p className="text-center text-gray-500">Conversion en cours…</p>}
 
       {error && <p className="text-center text-red-600">{error}</p>}
 

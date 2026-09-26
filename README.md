@@ -10,7 +10,11 @@
 - **Images ↔ PDF** — conversion dans les deux sens
 - **Filigrane** — texte avec aperçu en direct
 - **Numéros de page** — numérotation automatique
-- **Compresser** — compression basique
+- **Compresser** — compression légère ou forte
+- **PDF vers HTML, Word ou Excel** — extraction du texte (mise en page approximative)
+- **Image vers texte** — reconnaissance OCR dans le navigateur
+
+Les PDF chiffrés ne sont pas pris en charge. La compression forte transforme les pages en images et supprime la sélection du texte.
 
 ## Stack
 
@@ -21,6 +25,8 @@ React + TypeScript + Vite + Tailwind CSS v4, `pdf-lib` + `pdfjs-dist` pour la ma
 ```bash
 npm install
 npm run dev
+npm test
+npm run build
 ```
 
 ## Déploiement

@@ -12,15 +12,15 @@ export function PdfToExcelTool() {
 
   async function handleFiles(files: File[]) {
     const file = files[0]
-    setFileName(file.name)
     setError(null)
     setIsConverting(true)
     try {
       const bytes = await file.arrayBuffer()
       const blob = await convertPdfToExcel(bytes)
       setResult(blob)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Conversion impossible.')
+      setFileName(file.name)
+    } catch {
+      setError('Conversion impossible. Vérifiez que le PDF est lisible et non protégé.')
     } finally {
       setIsConverting(false)
     }
@@ -37,11 +37,11 @@ export function PdfToExcelTool() {
       title="PDF vers Excel"
       description="Détecte les lignes et colonnes à partir de la position du texte et génère un classeur Excel (.xlsx, une feuille par page). Fonctionne bien sur des tableaux propres, de façon approximative sinon — un PDF n'a pas de vraie structure de tableau."
     >
-      {!fileName && (
+      {!fileName && !isConverting && (
         <PdfDropzone accept="application/pdf" label="Déposez un fichier PDF ici" onFiles={handleFiles} />
       )}
 
-      {fileName && isConverting && <p className="text-center text-gray-500">Conversion en cours…</p>}
+      {isConverting && <p className="text-center text-gray-500">Conversion en cours…</p>}
 
       {error && <p className="text-center text-red-600">{error}</p>}
 

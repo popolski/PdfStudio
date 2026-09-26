@@ -18,10 +18,10 @@ export function PdfToImagesTool() {
   async function handleFiles(files: File[]) {
     const file = files[0]
     const bytes = await file.arrayBuffer()
+    const entries = await loadPageEntries({ id: 'file', name: file.name, bytes })
     setSourceBytes(bytes)
     setFileName(file.name)
     setResult(null)
-    const entries = await loadPageEntries({ id: 'file', name: file.name, bytes })
     dispatch({ type: 'ADD_PAGES', pages: entries.map((e) => ({ ...e, selected: true })) })
   }
 

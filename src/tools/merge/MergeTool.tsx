@@ -21,8 +21,8 @@ export function MergeTool() {
     for (const file of files) {
       const bytes = await file.arrayBuffer()
       const fileId = `f${fileCounter++}`
-      sourcesRef.current.set(fileId, bytes)
       const entries = await loadPageEntries({ id: fileId, name: file.name, bytes })
+      sourcesRef.current.set(fileId, bytes)
       dispatch({ type: 'ADD_PAGES', pages: entries })
     }
   }
