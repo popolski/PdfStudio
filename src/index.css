@@ -1,16 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-500: #7c3aed;
-  --color-brand-600: #6d28d9;
-  --color-brand-700: #5b21b6;
-  --color-page: #f7f7fb;
-  --color-ink: #191726;
-  --color-muted: #656473;
-  --color-line: #e5e3ed;
+  --color-brand-50: #edf3f9;
+  --color-brand-100: #dbe7f3;
+  --color-brand-200: #b8cce0;
+  --color-brand-500: #315b86;
+  --color-brand-600: #173b63;
+  --color-brand-700: #102c50;
+  --color-gold: #e9bd5d;
+  --color-gold-hover: #f2cd79;
+  --color-workspace: #e2eaf3;
+  --color-page: #e2eaf3;
+  --color-ink: #102544;
+  --color-muted: #5e6f85;
+  --color-line: #d5dfeb;
 }
 
 body {
@@ -21,6 +24,6 @@ body {
 }
 
 :is(a, button, input, select, textarea):focus-visible {
-  outline: 3px solid var(--color-brand-500);
+  outline: 3px solid var(--color-gold);
   outline-offset: 2px;
 }

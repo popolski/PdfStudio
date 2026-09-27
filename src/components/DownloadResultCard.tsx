@@ -19,7 +19,7 @@ export function DownloadResultCard({ fileSizeBytes, onDownload, onReset, compact
         <button
           type="button"
           onClick={onDownload}
-          className="rounded-lg bg-brand-600 px-5 py-2.5 font-medium text-white hover:bg-brand-700"
+          className="rounded-lg bg-gold px-5 py-2.5 font-semibold text-brand-700 hover:bg-gold-hover"
         >
           Télécharger
         </button>

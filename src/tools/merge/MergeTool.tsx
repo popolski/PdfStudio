@@ -65,14 +65,15 @@ export function MergeTool() {
         ))}
       </ol>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
-        <section className="min-w-0 rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-6" aria-label="Fichiers et pages">
+      <div className={pages.length > 0 ? 'grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]' : ''}>
+        <section className={pages.length > 0 ? 'min-w-0 rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-6' : ''} aria-label="Fichiers et pages">
           <PdfDropzone
             accept="application/pdf"
             multiple
             compact={pages.length > 0}
-            label={pages.length > 0 ? 'Ajouter un autre PDF' : 'Choisir des fichiers PDF'}
-            hint={pages.length > 0 ? 'Les nouvelles pages sont ajoutées à la fin' : 'Glissez vos fichiers ici ou parcourez votre appareil'}
+            label={pages.length > 0 ? 'Ajouter un autre PDF' : 'Glissez vos PDF ici'}
+            hint={pages.length > 0 ? 'Les nouvelles pages sont ajoutées à la fin' : 'ou cliquez pour en choisir plusieurs'}
+            features={['Assembler plusieurs PDF', "Changer l'ordre des pages", 'Télécharger un seul document']}
             onFiles={handleFiles}
           />
 
@@ -93,31 +94,27 @@ export function MergeTool() {
           )}
         </section>
 
-        <aside className="rounded-2xl border border-line bg-white p-5 shadow-sm lg:sticky lg:top-6" aria-label="Résultat de la fusion">
-          <h2 className="text-base font-semibold text-ink">Votre document</h2>
-          {pages.length === 0 ? (
-            <p className="mt-3 text-sm leading-relaxed text-muted">Ajoutez des PDF pour voir les pages à assembler.</p>
-          ) : (
-            <>
-              <p className="my-4 text-sm text-muted">{pages.length} page{pages.length > 1 ? 's' : ''} dans le fichier final</p>
-              {result ? (
-                <DownloadResultCard
-                  compact
-                  fileSizeBytes={result.byteLength}
-                  onDownload={() => downloadBytes(result, 'fusion.pdf')}
-                  onReset={reset}
-                />
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <ProcessingButton fullWidth label="Fusionner les PDF" onClick={handleApply} />
-                  <button type="button" onClick={reset} className="rounded-lg border border-line px-5 py-2.5 font-medium text-muted hover:bg-brand-50">
-                    Tout effacer
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </aside>
+        {pages.length > 0 && (
+          <aside className="rounded-2xl border border-line bg-white p-5 shadow-sm lg:sticky lg:top-6" aria-label="Résultat de la fusion">
+            <h2 className="text-base font-semibold text-ink">Votre document</h2>
+            <p className="my-4 text-sm text-muted">{pages.length} page{pages.length > 1 ? 's' : ''} dans le fichier final</p>
+            {result ? (
+              <DownloadResultCard
+                compact
+                fileSizeBytes={result.byteLength}
+                onDownload={() => downloadBytes(result, 'fusion.pdf')}
+                onReset={reset}
+              />
+            ) : (
+              <div className="flex flex-col gap-3">
+                <ProcessingButton fullWidth label="Fusionner les PDF" onClick={handleApply} />
+                <button type="button" onClick={reset} className="rounded-lg border border-line px-5 py-2.5 font-medium text-muted hover:bg-brand-50">
+                  Tout effacer
+                </button>
+              </div>
+            )}
+          </aside>
+        )}
       </div>
     </ToolLayout>
   )

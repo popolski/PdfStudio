@@ -21,7 +21,7 @@ export function ToolCard({ to, icon, title, description }: ToolCardProps) {
         <h3 className="text-lg font-semibold text-ink">{title}</h3>
         <p className="mt-1 text-sm leading-snug text-muted">{description}</p>
       </div>
-      <span className="ml-auto text-muted group-hover:text-brand-600 sm:self-end" aria-hidden="true">↗</span>
+      <span className="ml-auto grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gold/40 text-brand-700 transition-colors group-hover:bg-gold sm:self-end" aria-hidden="true">↗</span>
     </Link>
   )
 }

@@ -48,11 +48,11 @@ export function PdfToWordTool() {
       {result && !isConverting && (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-6 text-center">
           <p className="font-medium text-green-800">{fileName} converti avec succès</p>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             <button
               type="button"
               onClick={() => downloadBlob(result, `${fileName.replace(/\.pdf$/i, '')}.docx`)}
-              className="rounded-lg bg-brand-600 px-5 py-2 font-medium text-white hover:bg-brand-700"
+              className="rounded-lg bg-gold px-5 py-2 font-semibold text-brand-700 hover:bg-gold-hover"
             >
               Télécharger le .docx
             </button>

@@ -30,11 +30,11 @@ export function ProcessingButton({ label, onClick, disabled, icon, fullWidth = f
         type="button"
         onClick={handleClick}
         disabled={disabled || isProcessing}
-        className={`flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-gray-300 ${fullWidth ? 'w-full' : ''}`}
+        className={`flex items-center justify-center gap-2 rounded-lg bg-gold px-6 py-3 font-semibold text-brand-700 shadow-sm transition-colors hover:bg-gold-hover disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600 ${fullWidth ? 'w-full' : ''}`}
       >
         {isProcessing ? (
           <>
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand-700 border-t-transparent" />
             Traitement en cours…
           </>
         ) : (

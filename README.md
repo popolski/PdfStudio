@@ -16,6 +16,8 @@
 
 Les PDF chiffrés ne sont pas pris en charge. La compression forte transforme les pages en images et supprime la sélection du texte.
 
+L'interface regroupe les outils dans une barre de navigation. Chaque outil ouvre et traite ses propres fichiers dans le navigateur ; le bouton de téléchargement apparaît une fois le résultat prêt.
+
 ## Stack
 
 React + TypeScript + Vite + Tailwind CSS v4, `pdf-lib` + `pdfjs-dist` pour la manipulation/rendu PDF, `@dnd-kit` pour le glisser-déposer, `jszip` pour les téléchargements groupés.

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { SiteHeader } from '../components/SiteHeader'
 import { ToolCard } from '../components/ToolCard'
+import { ToolNav } from '../components/ToolNav'
 
 const featured = [
   {
@@ -54,14 +55,16 @@ export function Home() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-8 sm:pt-14">
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Simple et privé</p>
-        <h1 className="max-w-2xl text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
-          Que faire avec votre PDF ?
-        </h1>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
-          Choisissez une action. Vos documents sont traités dans votre navigateur.
-        </p>
+      <ToolNav />
+      <main className="min-h-screen bg-workspace px-4 pb-16 pt-10 sm:px-8 sm:pt-14">
+        <div className="mx-auto max-w-6xl">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Atelier PDF</p>
+          <h1 className="max-w-2xl text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
+            Que faire avec votre PDF ?
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
+            Choisissez une action, puis ouvrez votre fichier. Tout se passe dans votre navigateur.
+          </p>
 
         <section aria-labelledby="actions-principales" className="mt-10">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
@@ -96,6 +99,10 @@ export function Home() {
             ))}
           </div>
         </section>
+        <p className="mt-9 inline-flex items-center gap-2 rounded-lg bg-[#eff5ee] px-4 py-2 text-sm font-medium text-[#3c7550]">
+          <span aria-hidden="true">🔒</span> Vos fichiers restent sur cet appareil
+        </p>
+        </div>
       </main>
     </>
   )

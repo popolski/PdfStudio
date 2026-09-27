@@ -52,13 +52,13 @@ export function PdfToHtmlTool() {
 
       {html && !isConverting && (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-gray-500">{fileName}</p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={handleDownload}
-                className="rounded-lg bg-brand-600 px-5 py-2 font-medium text-white hover:bg-brand-700"
+                className="rounded-lg bg-gold px-5 py-2 font-semibold text-brand-700 hover:bg-gold-hover"
               >
                 Télécharger le HTML
               </button>

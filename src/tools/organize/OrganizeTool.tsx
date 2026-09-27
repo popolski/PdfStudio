@@ -38,6 +38,11 @@ export function OrganizeTool() {
     setResult(bytes)
   }
 
+  function updatePages(action: Parameters<typeof dispatch>[0]) {
+    setResult(null)
+    dispatch(action)
+  }
+
   return (
     <ToolLayout
       title="Organiser un PDF"
@@ -46,21 +51,28 @@ export function OrganizeTool() {
       {!sourceBytes && (
         <PdfDropzone
           accept="application/pdf"
-          label="Déposez un fichier PDF ici"
-          hint="ou cliquez pour parcourir vos fichiers"
+          label="Glissez un PDF ici"
+          hint="ou cliquez pour en choisir un"
+          features={['Réordonner les pages', 'Pivoter ou retirer une page', 'Exporter le PDF réorganisé']}
           onFiles={handleFiles}
         />
       )}
 
-      {sourceBytes && pages.length > 0 && (
+      {sourceBytes && (
         <div className="flex flex-col gap-6">
-          <p className="text-sm text-gray-500">{fileName} — {pages.length} page(s)</p>
-          <PageThumbnailGrid
-            pages={pages}
-            onReorder={(fromId, toId) => dispatch({ type: 'REORDER', fromId, toId })}
-            onDelete={(id) => dispatch({ type: 'DELETE_PAGE', id })}
-            onRotate={(id) => dispatch({ type: 'ROTATE_PAGE', id })}
-          />
+          <div className="rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-6">
+            <p className="mb-4 text-sm font-medium text-muted">{fileName} · {pages.length} page{pages.length > 1 ? 's' : ''}</p>
+            {pages.length > 0 ? (
+              <PageThumbnailGrid
+                pages={pages}
+                onReorder={(fromId, toId) => updatePages({ type: 'REORDER', fromId, toId })}
+                onDelete={(id) => updatePages({ type: 'DELETE_PAGE', id })}
+                onRotate={(id) => updatePages({ type: 'ROTATE_PAGE', id })}
+              />
+            ) : (
+              <p className="rounded-xl bg-brand-50 p-5 text-sm text-muted">Toutes les pages ont été retirées. Recommencez avec un autre PDF.</p>
+            )}
+          </div>
 
           {result ? (
             <DownloadResultCard
